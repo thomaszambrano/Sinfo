@@ -1,6 +1,7 @@
 import json
 import os
 import time
+import itertools
 import requests
 from dotenv import load_dotenv
 from supabase import create_client
@@ -9,15 +10,25 @@ load_dotenv()
 
 SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
-GEMINI_KEY = os.environ["GEMINI_API_KEY"]
 CHUNKS_FILE = "data/chunks.jsonl"
-BATCH_SIZE = 5  # Google embedding API: máx 100 por request, usamos 20 para ser conservadores
+BATCH_SIZE = 5
 
 EMBED_MODEL = "models/gemini-embedding-2"
-EMBED_URL_BASE = f"https://generativelanguage.googleapis.com/v1beta/{EMBED_MODEL}:batchEmbedContents?key={GEMINI_KEY}"
+
+# Leer keys del .env, filtrar vacías
+GEMINI_KEYS = [k for k in [
+    os.environ.get("GEMINI_API_KEY", ""),
+    os.environ.get("GEMINI_API_KEY_2", ""),
+    os.environ.get("GEMINI_API_KEY_3", ""),
+] if k]
+
+print(f"Usando {len(GEMINI_KEYS)} API keys en rotación")
+key_cycle = itertools.cycle(GEMINI_KEYS)
 
 
 def embed_batch(texts: list[str]) -> list[list[float]]:
+    key = next(key_cycle)
+    url = f"https://generativelanguage.googleapis.com/v1beta/{EMBED_MODEL}:batchEmbedContents?key={key}"
     body = {
         "requests": [
             {
@@ -28,13 +39,14 @@ def embed_batch(texts: list[str]) -> list[list[float]]:
             for t in texts
         ]
     }
-    resp = requests.post(EMBED_URL_BASE, json=body, timeout=30)
+    resp = requests.post(url, json=body, timeout=30)
     resp.raise_for_status()
     return [e["values"] for e in resp.json()["embeddings"]]
 
 
 def embed_query_single(text: str) -> list[float]:
-    url = f"https://generativelanguage.googleapis.com/v1beta/{EMBED_MODEL}:embedContent?key={GEMINI_KEY}"
+    key = next(key_cycle)
+    url = f"https://generativelanguage.googleapis.com/v1beta/{EMBED_MODEL}:embedContent?key={key}"
     body = {
         "model": EMBED_MODEL,
         "content": {"parts": [{"text": text}]},
@@ -56,7 +68,7 @@ def main():
             chunks.append(json.loads(line))
     print(f"  {len(chunks)} chunks cargados")
 
-    # Insertar sentencias primero
+    # Insertar sentencias
     sentencias_vistas = {}
     for c in chunks:
         num = c["sentencia_numero"]
@@ -74,41 +86,58 @@ def main():
     print(f"  Insertando {len(sentencias_vistas)} sentencias...")
     sent_list = list(sentencias_vistas.values())
     for i in range(0, len(sent_list), 50):
-        batch = sent_list[i:i+50]
-        sb.table("sentencias").upsert(batch, on_conflict="numero").execute()
+        sb.table("sentencias").upsert(sent_list[i:i+50], on_conflict="numero").execute()
     print("  Sentencias insertadas OK")
 
     # Obtener IDs
     rows = sb.table("sentencias").select("id, numero").execute().data
     sent_id_map = {r["numero"]: r["id"] for r in rows}
 
-    # Embeddings y carga
-    total = len(chunks)
-    subidos = 0
-    errores = 0
+    # Verificar chunks ya subidos para no duplicar
+    print("  Verificando chunks ya en Supabase...")
+    existing_raw = sb.table("chunks").select("chunk_index, sentencia_id").execute().data
+    existing_set = set((r["sentencia_id"], r["chunk_index"]) for r in existing_raw)
+    print(f"  {len(existing_set)} chunks ya subidos, saltando...")
 
-    # Verificar dimensión del embedding de prueba
-    print("  Verificando dimensión de embeddings Google...")
+    # Verificar dimensión
+    print("  Verificando dimensión de embeddings...")
     test_emb = embed_query_single("prueba")
     print(f"  Dimensión: {len(test_emb)}")
 
+    total = len(chunks)
+    subidos = 0
+    saltados = 0
+    errores = 0
+
     for i in range(0, total, BATCH_SIZE):
         batch = chunks[i:i+BATCH_SIZE]
-        texts = [c["content"] for c in batch]
+
+        # Filtrar chunks ya subidos
+        batch_filtrado = []
+        for c in batch:
+            sid = sent_id_map.get(c["sentencia_numero"])
+            if not sid:
+                continue
+            if (sid, c["chunk_index"]) in existing_set:
+                saltados += 1
+                continue
+            batch_filtrado.append((c, sid))
+
+        if not batch_filtrado:
+            continue
+
+        texts = [c["content"] for c, _ in batch_filtrado]
 
         try:
             embeddings = embed_batch(texts)
         except Exception as e:
             print(f"\n  ERROR batch {i}: {e}")
             errores += 1
-            time.sleep(3)
+            time.sleep(5)
             continue
 
         records = []
-        for c, emb in zip(batch, embeddings):
-            sid = sent_id_map.get(c["sentencia_numero"])
-            if not sid:
-                continue
+        for (c, sid), emb in zip(batch_filtrado, embeddings):
             records.append({
                 "sentencia_id": sid,
                 "content": c["content"],
@@ -120,10 +149,10 @@ def main():
             sb.table("chunks").insert(records).execute()
             subidos += len(records)
 
-        print(f"  [{min(i+BATCH_SIZE, total)}/{total}] {subidos} subidos, {errores} errores", end="\r", flush=True)
-        time.sleep(3)
+        print(f"  [{min(i+BATCH_SIZE, total)}/{total}] {subidos} subidos, {saltados} saltados, {errores} errores", end="\r", flush=True)
+        time.sleep(2)
 
-    print(f"\nFinalizado: {subidos} chunks en Supabase, {errores} errores")
+    print(f"\nFinalizado: {subidos} nuevos chunks en Supabase, {saltados} saltados, {errores} errores")
 
 
 if __name__ == "__main__":
