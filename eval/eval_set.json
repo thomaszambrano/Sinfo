@@ -1,0 +1,172 @@
+{
+  "metadata": {
+    "corpus": "~23 sentencias de tutela Corte Constitucional Colombia, 2025-2026",
+    "embedding_model": "gemini-embedding-2",
+    "llm_model": "gemini-2.0-flash",
+    "similarity_threshold": 0.55,
+    "created": "2026-05-24",
+    "notes": "Queries diseñadas para el corpus actual. Clasificadas por tipo: 'hit' (debería encontrar resultados), 'miss' (fuera del corpus, debe responder 'no encontré'), 'edge' (casos límite de formulación)."
+  },
+  "queries": [
+    {
+      "id": "q01",
+      "type": "hit",
+      "query": "Me negaron un medicamento que necesito para vivir, ¿qué puedo hacer?",
+      "tema": "derecho a la salud / acceso a medicamentos",
+      "expected_behavior": "Citar sentencias sobre tutela y derecho a la salud, mencionar protección del mínimo vital en salud",
+      "expected_sources_include": ["T-"]
+    },
+    {
+      "id": "q02",
+      "type": "hit",
+      "query": "La EPS me tiene en lista de espera para una cirugía urgente hace seis meses",
+      "tema": "derecho a la salud / oportunidad en atención",
+      "expected_behavior": "Citar jurisprudencia sobre oportunidad en prestación de servicios de salud",
+      "expected_sources_include": ["T-"]
+    },
+    {
+      "id": "q03",
+      "type": "hit",
+      "query": "Me despidieron estando incapacitada, ¿es legal?",
+      "tema": "estabilidad laboral reforzada / trabajador incapacitado",
+      "expected_behavior": "Citar tutelas sobre estabilidad laboral reforzada por enfermedad o incapacidad",
+      "expected_sources_include": ["T-"]
+    },
+    {
+      "id": "q04",
+      "type": "hit",
+      "query": "Una entidad pública no me responde el derecho de petición que radicué hace 20 días",
+      "tema": "derecho de petición",
+      "expected_behavior": "Informar plazos constitucionales y citar tutelas sobre derecho de petición",
+      "expected_sources_include": ["T-"]
+    },
+    {
+      "id": "q05",
+      "type": "hit",
+      "query": "El colegio le está negando la matrícula a mi hijo porque debemos el año pasado",
+      "tema": "derecho a la educación / continuidad",
+      "expected_behavior": "Citar sentencias que protegen el derecho a la educación y prohíben negar matrícula por deudas",
+      "expected_sources_include": ["T-"]
+    },
+    {
+      "id": "q06",
+      "type": "hit",
+      "query": "Soy víctima del conflicto armado y no me han entregado la indemnización",
+      "tema": "derechos de víctimas / reparación",
+      "expected_behavior": "Citar tutelas sobre derechos de víctimas del conflicto y acceso a reparación",
+      "expected_sources_include": ["T-"]
+    },
+    {
+      "id": "q07",
+      "type": "hit",
+      "query": "Me tienen detenido hace más de un año sin que me hayan juzgado",
+      "tema": "detención preventiva / plazo razonable",
+      "expected_behavior": "Citar jurisprudencia sobre detención preventiva y derecho al plazo razonable",
+      "expected_sources_include": ["T-"]
+    },
+    {
+      "id": "q08",
+      "type": "hit",
+      "query": "Colpensiones me negó la pensión de sobreviviente siendo la compañera permanente del fallecido",
+      "tema": "pensión de sobrevivientes / unión marital",
+      "expected_behavior": "Citar tutelas sobre pensión de sobrevivientes para compañeros permanentes",
+      "expected_sources_include": ["T-"]
+    },
+    {
+      "id": "q09",
+      "type": "hit",
+      "query": "¿Puede una entidad pública negar información sobre sus contratos alegando reserva?",
+      "tema": "acceso a la información pública / transparencia",
+      "expected_behavior": "Citar sentencias sobre límites a la reserva de información y derecho de acceso",
+      "expected_sources_include": ["T-", "C-"]
+    },
+    {
+      "id": "q10",
+      "type": "hit",
+      "query": "Me están obligando a trabajar en condiciones que ponen en riesgo mi salud",
+      "tema": "condiciones dignas de trabajo / salud laboral",
+      "expected_behavior": "Citar tutelas sobre condiciones dignas de trabajo y protección a la salud del trabajador",
+      "expected_sources_include": ["T-"]
+    },
+    {
+      "id": "q11",
+      "type": "hit",
+      "query": "Persona mayor de 70 años a quien le niegan tratamiento médico por la edad",
+      "tema": "discriminación por edad / adulto mayor",
+      "expected_behavior": "Citar protección constitucional a adultos mayores y prohibición de discriminación",
+      "expected_sources_include": ["T-"]
+    },
+    {
+      "id": "q12",
+      "type": "hit",
+      "query": "Acción de tutela para proteger mi vivienda frente a un desalojo",
+      "tema": "derecho a la vivienda digna / desalojo",
+      "expected_behavior": "Citar jurisprudencia sobre procedencia de tutela para proteger vivienda y mínimo vital",
+      "expected_sources_include": ["T-"]
+    },
+    {
+      "id": "q13",
+      "type": "miss",
+      "query": "¿Cuáles son los requisitos para constituir una sociedad anónima en Colombia?",
+      "tema": "derecho comercial — fuera del corpus de tutelas",
+      "expected_behavior": "Responder que no hay sentencias relevantes en el corpus actual",
+      "expected_sources_include": []
+    },
+    {
+      "id": "q14",
+      "type": "miss",
+      "query": "¿Qué dice la Corte Suprema de Justicia sobre el contrato de arrendamiento?",
+      "tema": "fuera del corpus — otra corporación",
+      "expected_behavior": "Indicar que el corpus solo cubre la Corte Constitucional y no se encontraron resultados relevantes",
+      "expected_sources_include": []
+    },
+    {
+      "id": "q15",
+      "type": "miss",
+      "query": "Necesito asesoría para importar mercancía de China",
+      "tema": "completamente fuera del dominio jurídico-constitucional",
+      "expected_behavior": "No encontrar sentencias relevantes; no inventar información",
+      "expected_sources_include": []
+    },
+    {
+      "id": "q16",
+      "type": "edge",
+      "query": "tutela salud",
+      "tema": "query minimalista — edge case de formulación",
+      "expected_behavior": "Recuperar resultados generales de tutela y salud; puede ser ambiguo pero debería retornar algo",
+      "expected_sources_include": ["T-"]
+    },
+    {
+      "id": "q17",
+      "type": "edge",
+      "query": "¿La tutela procede contra particulares que prestan servicios de salud como las EPS?",
+      "tema": "procedibilidad de tutela / particulares",
+      "expected_behavior": "Citar jurisprudencia sobre procedencia de tutela contra particulares",
+      "expected_sources_include": ["T-", "C-"]
+    },
+    {
+      "id": "q18",
+      "type": "edge",
+      "query": "Mi caso es urgente, me van a operar mañana y la EPS no autorizó la cirugía",
+      "tema": "urgencia manifiesta / salud",
+      "expected_behavior": "Recuperar tutelas sobre urgencia en salud y autorización de procedimientos; urgencia no debería cambiar la búsqueda semántica",
+      "expected_sources_include": ["T-"]
+    },
+    {
+      "id": "q19",
+      "type": "hit",
+      "query": "Me niegan el acceso a mi historia clínica",
+      "tema": "derecho a la información / historia clínica",
+      "expected_behavior": "Citar tutelas sobre acceso a historia clínica como derecho fundamental",
+      "expected_sources_include": ["T-"]
+    },
+    {
+      "id": "q20",
+      "type": "hit",
+      "query": "El Sisben me cambió el nivel y perdí todos los beneficios de salud",
+      "tema": "derecho a la salud / Sisben / focalización",
+      "expected_behavior": "Citar jurisprudencia sobre continuidad en el acceso a salud y protección ante cambios en el Sisben",
+      "expected_sources_include": ["T-"]
+    }
+  ]
+}
