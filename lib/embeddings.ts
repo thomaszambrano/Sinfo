@@ -5,7 +5,7 @@ export async function embedQuery(text: string): Promise<number[]> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'models/gemini-embedding-2',
+      model: 'models/gemini-embedding-001',
       content: { parts: [{ text }] },
       taskType: 'RETRIEVAL_QUERY',
     }),
